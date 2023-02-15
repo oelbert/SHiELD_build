@@ -28,6 +28,7 @@ HYDRO="nh"
 COMP="prod"
 BIT="32bit"
 COMPILER="intel"
+SERIAL="noserial"
 
 #
 ## parse arguments
@@ -54,6 +55,10 @@ do
         COMPILER="${arg#*=}"
         shift # Remove COMPILER from processing
         ;;
+        noserial|serial)
+        SERIAL="${arg#*=}"
+        shift # Remove SERIAL from processing
+        ;;
         *)
         exit 99
         ;;
@@ -65,21 +70,21 @@ echo $PATH
 pushd ${SHiELD_SRC}
 
 if [ ${CONFIG} = 'solo' ] ; then
-  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}.${SERIAL}/pathnames_fv3 \
       GFDL_atmos_cubed_sphere/driver/solo/ \
       GFDL_atmos_cubed_sphere/tools/ \
       GFDL_atmos_cubed_sphere/model/ \
       atmos_drivers/solo/
 
 elif [ ${CONFIG} = 'shield' ] ; then
-  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs \
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}.${SERIAL}/pathnames_gfs \
       GFDL_atmos_cubed_sphere/model/gfdl_cld_mp.F90 \
       GFDL_atmos_cubed_sphere/model/cld_eff_rad.F90 \
       SHiELD_physics/gsmphys/  \
       SHiELD_physics/GFS_layer/ \
       SHiELD_physics/IPD_layer/
 
-  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}.${SERIAL}/pathnames_fv3 \
       SHiELD_physics/FV3GFS/ \
       atmos_drivers/SHiELD/atmos_model.F90 \
       FMSCoupler/SHiELD/coupler_main.F90 \

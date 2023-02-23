@@ -59,6 +59,7 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
   avx="Y"
   compiler="intel"
   clean="noclean"
+  serial="noserial"
 
   config_name="SHiELD"
 
@@ -100,6 +101,10 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
+          noserial|serial)
+             serial="${arg#*=}"
+             shift # Remove "serial" from processing
+             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -113,6 +118,7 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
           echo -e "\t[intel(D) | gnu] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
+          echo -e "\t[noserial(D) | serial] \t\t\t seialbox support"
           echo -e "\n"
           exit
           ;;
@@ -146,6 +152,7 @@ echo -e "\tbit      = $bit"
 echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
+echo -e "\tserial    = $serial"
 echo -e "\n"
 sleep 5
 
@@ -155,12 +162,12 @@ sleep 5
      echo " cleaning FMS library, nceplibs and build directory in 2 seconds"
      sleep 2
      \rm -rf libFMS/${compiler}/*
-     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}/*
      \rm -rf nceplibs/${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
-     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
@@ -198,39 +205,45 @@ sleep 5
 
 #
 # ensure the build and final executable locations are available
-  mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}
+  mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}
   mkdir -p ./bin/
 
 # build the model
-echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
+echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `date`"
+  #
+  # optionally run serialbox preprocessor
+  if [ $serial = "serial" ] ; then
+    echo -e ">>> preprocessing code for serialization"
+    # run preprocessor here
+  fi
   #
   # create the file list for the build
-    mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> filelist cration failed"
        exit 4
     fi
   #
   # create the library makefiles
-    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> makefile creation failed"
        exit 5
     fi
   #
   # build the configuration
-    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${serial} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}.out 2>&1
   #
   # move the executable to an accessible area
-    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
+    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.${serial}.x
 
 #
 # test and report on build success
   if [ $? -ne 0 ] ; then
-     echo ">>> ${config_name} build ${hydro} ${comp} ${bit} ${compiler} failed"
+     echo ">>> ${config_name} build ${hydro} ${comp} ${bit} ${compiler} ${serial} failed"
      exit 6
   else
-     echo " ${config_name} build ${hydro} ${comp} ${bit} ${compiler} successful"
+     echo " ${config_name} build ${hydro} ${comp} ${bit} ${compiler} ${serial} successful"
   fi
 
 exit 0

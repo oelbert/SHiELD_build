@@ -39,10 +39,10 @@ if [ `hostname | cut -c1-4` = "gaea" ] || [ `hostname | cut -c1-3` = "nid" ] ; t
    module load boost/1.72.0
 
    # make your compiler selections here
-   export FC=gfortran
+   export FC=ftn
    export CC=cc
    export CXX=CC
-   export LD=gfortran
+   export LD=ftn
    export TEMPLATE=site/gnu.mk
    export LAUNCHER=srun
 

@@ -136,8 +136,8 @@ export BUILD_ROOT=${PWD%/*}
 export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
 export NCEP_DIR=${BUILD_ROOT}/Build
-#export SERIALBOX_ROOT=/ncrc/home2/Oliver.Elbert/code/repos/serialbox
-export PP_SER=/ncrc/home2/Oliver.Elbert/code/repos/serialbox/install/python/pp_ser/pp_ser.py
+export SERIALBOX_ROOT=/ncrc/home2/Oliver.Elbert/code/repos/serialbox
+export PP_SER=${SERIALBOX_ROOT}/install/python/pp_ser/pp_ser.py
 export PPSER_FLAGS="--verbose --ignore-identical -m utils_ppser_kbuff"
 export SERIALBOX_OUTDIR=${PWD%/*/*}/SERIALBOX_BUILD
 
@@ -166,12 +166,12 @@ sleep 5
      echo " cleaning FMS library, nceplibs and build directory in 2 seconds"
      sleep 2
      \rm -rf libFMS/${compiler}/*
-     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf nceplibs/${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
-     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
@@ -209,7 +209,7 @@ sleep 5
 
 #
 # ensure the build and final executable locations are available
-  mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}
+  mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}
   mkdir -p ./bin/
 
 # build the model
@@ -237,24 +237,24 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
   fi
   #
   # create the file list for the build
-    mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}.out 2>&1
+    mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> filelist cration failed"
        exit 4
     fi
   #
   # create the library makefiles
-    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}.out 2>&1
+    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> makefile creation failed"
        exit 5
     fi
   #
   # build the configuration
-    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${serial} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
-    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}.${serial}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.${serial}.x
+    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
 
 #
 # test and report on build success

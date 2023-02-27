@@ -95,19 +95,19 @@ elif [ ${HYDRO} = 'sw' ] ; then
   FV3_cppDefs+=" -DSW_DYNAMICS -DDYNAMICS_ZS"
 fi
 
-pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}.${SERIAL}/
+pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
 
 ############################
 #---CREATE MAKEFILES
 ############################
 if [ ${CONFIG} = 'shield' ] ; then
   mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
-           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}.${SERIAL}/pathnames_gfs
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 fi
 
 mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
          -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${NCEP_DIR}/libFMS/${COMPILER}/${BIT}" \
-          ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}.${SERIAL}/pathnames_fv3
+          ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
 ############################
 #---ADD LIBS TO FINAL LINK

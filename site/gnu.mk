@@ -27,9 +27,9 @@ endif
 
 MAKEFLAGS += --jobs=8
 
-NETCDF_ROOT       = $(NETCDF_DIR)
-MPI_ROOT          = $(MPICH_DIR)
-SERIALBOX_ROOT    = /ncrc/home2/Oliver.Elbert/code/repos/serialbox
+NETCDF_ROOT = $(NETCDF_DIR)
+MPI_ROOT = $(MPICH_DIR)
+SERIALBOX_ROOT = /ncrc/home2/Oliver.Elbert/code/repos/serialbox
 # start with blank LIB
 LIBS :=
 

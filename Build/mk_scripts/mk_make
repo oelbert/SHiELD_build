@@ -31,7 +31,6 @@ COMP=""
 BIT="32BIT=Y"
 AVX="Y"
 COMPILER="intel"
-SERIAL="noserial"
 
 bit="32bit"
 comp="prod"
@@ -73,10 +72,6 @@ do
           COMPILER="${arg#*=}"
           shift # Remove COMPILER from processing
           ;;
-        serial|noserial)
-          SERIAL="${arg#*=}"
-          shift # Remove SERIAL from processing
-          ;;
     esac
 done
 
@@ -93,8 +88,8 @@ if [ ${CONFIG} = 'shield' ] ; then
 fi
 
 if [ ${CONFIG} = 'shield' ] ; then
-  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER}.${SERIAL} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
 fi
-(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER}.${SERIAL} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
+(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
 
 exit 0

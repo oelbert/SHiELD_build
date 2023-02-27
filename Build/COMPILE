@@ -136,8 +136,8 @@ export BUILD_ROOT=${PWD%/*}
 export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
 export NCEP_DIR=${BUILD_ROOT}/Build
-export SERIALBOX_ROOT=/ncrc/home2/Oliver.Elbert/code/repos/serialbox
-export PP_SER=${SERIALBOX_ROOT}/install/python/pp_ser/pp_ser.py
+#export SERIALBOX_ROOT=/ncrc/home2/Oliver.Elbert/code/repos/serialbox
+export PP_SER=/ncrc/home2/Oliver.Elbert/code/repos/serialbox/install/python/pp_ser/pp_ser.py
 export PPSER_FLAGS="--verbose --ignore-identical -m utils_ppser_kbuff"
 export SERIALBOX_OUTDIR=${PWD%/*/*}/SERIALBOX_BUILD
 

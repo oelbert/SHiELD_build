@@ -220,11 +220,18 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     echo -e ">>> preprocessing code for serialization"
     # make directories for serialbox-preprocessed code
     # Currently only doing physics, but we can add more as necessary
-    mkdir -p $SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/
+    mkdir -p $SERIALBOX_OUTDIR/SHiELD_physics/GFS_layer/
+    mkdir -p $SERIALBOX_OUTDIR/SHiELD_physics/simple_coupler/
+    #mkdir -p $SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/
     # run preprocessor
-    python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/ $SHiELD_SRC/SHiELD_physics/gsmphys/*.F90
+    python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/GFS_layer/ $SHiELD_SRC/SHiELD_physics/GFS_layer/*.F90
+    # python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/ $SHiELD_SRC/SHiELD_physics/gsmphys/*.F90
+    python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/simple_coupler/ $SHiELD_SRC/SHiELD_physics/simple_coupler/*.F90
+    
     # copy back to src location to preserve rest of build system
-    cp $SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/* $SHiELD_SRC/SHiELD_physics/gsmphys/
+    cp $SERIALBOX_OUTDIR/SHiELD_physics/GFS_layer/* $SHiELD_SRC/SHiELD_physics/GFS_layer/
+    # cp $SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/* $SHiELD_SRC/SHiELD_physics/gsmphys/
+    cp $SERIALBOX_OUTDIR/SHiELD_physics/simple_coupler/* $SHiELD_SRC/SHiELD_physics/simple_coupler/
     echo -e "Finished preprocessing for serialization"
 
   fi

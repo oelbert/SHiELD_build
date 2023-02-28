@@ -99,10 +99,10 @@ fi
 # optionally link serialbox modules for data serialization
 SERIAL_I_FLAGS=""
 SERIAL_L_FLAGS=""
-if [ ${SERIAL} = 'serial' ] ; then
-  SERIAL_I_FLAGS+="-I${SERIALBOX_ROOT}/include" 
-  SERIAL_L_FLAGS+="-L${SERIALBOX_ROOT}/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore"
-fi
+#if [ ${SERIAL} = 'serial' ] ; then
+#  SERIAL_I_FLAGS+="-I${SERIALBOX_ROOT}/include" 
+#  SERIAL_L_FLAGS+="-L${SERIALBOX_ROOT}/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore"
+#fi
 
 pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
 

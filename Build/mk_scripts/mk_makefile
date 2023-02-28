@@ -97,10 +97,11 @@ fi
 
 #
 # optionally link serialbox modules for data serialization
-SERIAL_FLAGS=""
+SERIAL_I_FLAGS=""
+SERIAL_L_FLAGS=""
 if [ ${SERIAL} = 'serial' ] ; then
-  SERIAL_FLAGS+="-I${SERIALBOX_ROOT}/include -L${SERIALBOX_ROOT}/lib" 
-  SERIAL_FLAGS+=" -lSerialboxFortran -lSerialboxC -lSerialboxCore"
+  SERIAL_I_FLAGS+="-I${SERIALBOX_ROOT}/include" 
+  SERIAL_L_FLAGS+="-L${SERIALBOX_ROOT}/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore"
 fi
 
 pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
@@ -109,13 +110,13 @@ pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
 #---CREATE MAKEFILES
 ############################
 if [ ${CONFIG} = 'shield' ] ; then
-  mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_FLAGS} -o "-cpp" -c "${GFS_cppDefs}" \
-           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
+  mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_I_FLAGS} -o "-cpp" -c "${GFS_cppDefs}" \
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs ${SERIAL_L_FLAGS}
 fi
 
-mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_FLAGS} -c "${FV3_cppDefs}" \
+mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_I_FLAGS} -c "${FV3_cppDefs}" \
          -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${NCEP_DIR}/libFMS/${COMPILER}/${BIT}" \
-          ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+          ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 ${SERIAL_L_FLAGS}
 
 ############################
 #---ADD LIBS TO FINAL LINK

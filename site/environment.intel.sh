@@ -36,6 +36,7 @@ if [ `hostname | cut -c1-4` = "gaea" ] || [ `hostname | cut -c1-3` = "nid" ] ; t
    module load cray-netcdf
    module load craype-hugepages4M
    module load cmake/3.20.1
+   module load boost/1.72.0
 
    # make your compiler selections here
    export FC=ftn

@@ -29,6 +29,7 @@ MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT    = $(MPICH_DIR)
+SERIALBOX_ROOT = /ncrc/home2/Oliver.Elbert/code/repos/serialbox/install
 # start with blank LIB
 LIBS :=
 
@@ -39,6 +40,9 @@ else
   INCLUDE = -I$(NETCDF_ROOT)/include
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
+
+LIBS += -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
+INCLUDE += -I$(SERIALBOX_ROOT)/include
 
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
 

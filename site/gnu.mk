@@ -29,7 +29,7 @@ MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT = $(MPICH_DIR)
-SERIALBOX_ROOT = /ncrc/home2/Oliver.Elbert/code/repos/serialbox/install
+SERIALBOX_ROOT = /lustre/f2/dev/gfdl/Oliver.Elbert/src/serialbox/install
 # start with blank LIB
 LIBS :=
 

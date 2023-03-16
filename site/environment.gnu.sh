@@ -32,22 +32,23 @@ if [ `hostname | cut -c1-4` = "gaea" ] || [ `hostname | cut -c1-3` = "nid" ] ; t
    module rm intel
    module load   PrgEnv-gnu
    module rm gcc
-   module load gcc
+   module load gcc/12.2.0
+   module load cray-hdf5
    module load cray-netcdf
    module load craype-hugepages4M
-   module load cmake
    module load boost
+   module load cmake/3.23.1
 
    # make your compiler selections here
    export FC=ftn
-   export CC=cc
+   export CC="cc -DHAVE_GETTID"
    export CXX=CC
    export LD=ftn
    export TEMPLATE=site/gnu.mk
    export LAUNCHER=srun
 
    # highest level of AVX support
-   export AVX_LEVEL=-xCORE-AVX2
+   export AVX_LEVEL=-march=native
 
    echo -e ' '
    module list

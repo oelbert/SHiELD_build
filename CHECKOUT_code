@@ -33,17 +33,18 @@ cd ${SHiELD_SRC}
 
 release="main"
 serialize="feature/serialization"
+serial_coupler="serializer"
 
 fv3_release=$release
 phy_release=$serialize
 fms_release="2022.03"
-coupler_release=$serialize
+coupler_release=$serial_coupler
 drivers_release="2022.02"
 
 git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${phy_release}   https://github.com/oelbert/SHiELD_physics
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-git clone -b ${coupler_release}   https://github.com/oelbert/FMScoupler
+git clone -b ${coupler_release}   https://github.com/oelbert/FMSCoupler
 git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
 #Automatic release tracking from Matt M.

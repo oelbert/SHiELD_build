@@ -43,7 +43,7 @@ drivers_release="2022.02"
 git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${phy_release}   https://github.com/oelbert/SHiELD_physics
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-git clone -b ${fms_release}   https://github.com/oelbert/FMSCoupler
+git clone -b ${coupler_release}   https://github.com/oelbert/FMScoupler
 git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
 #Automatic release tracking from Matt M.

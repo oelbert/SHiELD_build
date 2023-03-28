@@ -228,6 +228,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     mkdir -p $SERIALBOX_OUTDIR/SHiELD_physics/atmos_drivers/coupled/
     mkdir -p $SERIALBOX_OUTDIR/SHiELD_physics/atmos_drivers/solo/
     mkdir -p $SERIALBOX_OUTDIR/FMSCoupler/SHiELD/
+    mkdir -p $SERIALBOX_OUTDIR/GFDL_atmos_cubed_sphere/driver/SHiELD/
     
     # run preprocessor
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/GFS_layer/ $SHiELD_SRC/SHiELD_physics/GFS_layer/*.F90
@@ -238,6 +239,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/atmos_drivers/coupled/ $SHiELD_SRC/SHiELD_physics/atmos_drivers/coupled/*.F90
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/atmos_drivers/solo/ $SHiELD_SRC/SHiELD_physics/atmos_drivers/solo/*.F90
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/FMSCoupler/SHiELD/ $SHiELD_SRC/FMSCoupler/SHiELD/*.F90
+    python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/GFDL_atmos_cubed_sphere/driver/SHiELD/ $SHiELD_SRC/GFDL_atmos_cubed_sphere/driver/SHiELD/*.F90
     
     # copy back to src location to preserve rest of build system
     cp $SERIALBOX_OUTDIR/SHiELD_physics/GFS_layer/* $SHiELD_SRC/SHiELD_physics/GFS_layer/
@@ -248,6 +250,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     cp $SERIALBOX_OUTDIR/SHiELD_physics/atmos_drivers/coupled/* $SHiELD_SRC/SHiELD_physics/atmos_drivers/coupled/
     cp $SERIALBOX_OUTDIR/SHiELD_physics/atmos_drivers/solo/* $SHiELD_SRC/SHiELD_physics/atmos_drivers/solo/
     cp $SERIALBOX_OUTDIR/FMSCoupler/SHiELD/* $SHiELD_SRC/FMSCoupler/SHiELD/
+    cp $SERIALBOX_OUTDIR/GFDL_atmos_cubed_sphere/driver/SHiELD/* $SHiELD_SRC/GFDL_atmos_cubed_sphere/driver/SHiELD/
     echo -e "Finished preprocessing for serialization"
 
   fi

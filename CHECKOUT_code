@@ -32,16 +32,17 @@ mkdir -p ${SHiELD_SRC}
 cd ${SHiELD_SRC}
 
 release="main"
-serialize="feature/serialization"
+serialize_dycore="add_serialization"
+serialize_physics="feature/serialization"
 serial_coupler="serializer"
 
-fv3_release=$release
-phy_release=$serialize
+fv3_release=$serialize_dycore
+phy_release=$serialize_physics
 fms_release="2022.03"
 coupler_release=$serial_coupler
 drivers_release="2022.02"
 
-git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
+git clone -b ${fv3_release}   https://github.com/oelbert/GFDL_atmos_cubed_sphere
 git clone -b ${phy_release}   https://github.com/oelbert/SHiELD_physics
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
 git clone -b ${coupler_release}   https://github.com/oelbert/FMSCoupler

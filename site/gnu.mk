@@ -46,7 +46,7 @@ INCLUDE += -I$(SERIALBOX_ROOT)/include
 
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
 
-FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
+FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace -fallow-argument-mismatch
 
 ifeq ($(32BIT),Y)
 CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8

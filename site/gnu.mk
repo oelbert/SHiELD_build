@@ -29,7 +29,7 @@ MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT = $(MPICH_DIR)
-SERIALBOX_ROOT = /lustre/f2/dev/gfdl/Oliver.Elbert/src/serialbox/install
+SERIALBOX_ROOT = /lustre/f2/dev/gfdl/Oliver.Elbert/src/c4/serialbox/install
 # start with blank LIB
 LIBS :=
 
@@ -46,21 +46,13 @@ INCLUDE += -I$(SERIALBOX_ROOT)/include
 
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
 
-FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace -fallow-argument-mismatch
+FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
 
 ifeq ($(32BIT),Y)
 CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8
 FFLAGS +=
 else
 FFLAGS += -fdefault-real-8 -fdefault-double-8
-endif
-
-ifeq ($(AVX),Y)
-FFLAGS += $(AVX_LEVEL)
-CFLAGS += $(AVX_LEVEL)
-else
-FFLAGS += -march=native
-CFLAGS += -march-native
 endif
 
 FFLAGS_OPT = -O2 -fno-range-check

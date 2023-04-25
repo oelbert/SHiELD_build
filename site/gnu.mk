@@ -41,7 +41,7 @@ else
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
-LIBS += -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
+LIBSERIALBOX := -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
 INCLUDE += -I$(SERIALBOX_ROOT)/include
 
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
@@ -83,7 +83,7 @@ CFLAGS_DEBUG = -O0 -ggdb -g
 FFLAGS_TEST = -O3 -debug minimal -fp-model source -qoverride-limits
 CFLAGS_TEST = -O2
 
-LDFLAGS := -L/usr/lib -L$(SERIALBOX_ROOT)/lib
+LDFLAGS := -L/usr/lib
 LDFLAGS_OPENMP := -fopenmp
 LDFLAGS_VERBOSE := --verbose
 
@@ -125,7 +125,7 @@ ifeq ($(NETCDF),3)
 endif
 
 LIBS +=
-LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
+LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib $(LIBSERIALBOX)
 
 #---------------------------------------------------------------------------
 # you should never need to change any lines below.

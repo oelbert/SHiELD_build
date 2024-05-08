@@ -99,7 +99,7 @@ fi
 # optionally link serialbox modules for data serialization
 SERIAL_I_FLAGS=""
 SERIAL_L_FLAGS=""
-#SERIALBOX_ROOT=/lustre/f2/dev/gfdl/Oliver.Elbert/src/serialbox/install
+#SERIALBOX_ROOT=/autofs/ncrc-svm1_home2/Oliver.Elbert/code/repos/serialbox/install
 #if [ ${SERIAL} = 'serial' ] ; then
 #  SERIAL_I_FLAGS+="-I${SERIALBOX_ROOT}/include" 
 #  SERIAL_L_FLAGS+="-L${SERIALBOX_ROOT}/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore"

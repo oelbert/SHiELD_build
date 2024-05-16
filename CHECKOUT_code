@@ -38,9 +38,9 @@ serial_coupler="serializer"
 
 fv3_release=$serialize_dycore
 phy_release=$serialize_physics
-fms_release="2022.03"
+fms_release="2023.02"
 coupler_release=$serial_coupler
-drivers_release="2022.02"
+drivers_release="2023.02"
 
 git clone -b ${fv3_release}   https://github.com/oelbert/GFDL_atmos_cubed_sphere
 git clone -b ${phy_release}   https://github.com/oelbert/SHiELD_physics

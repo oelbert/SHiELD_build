@@ -23,30 +23,40 @@
 #  DISCLAIMER: This script is provided as-is and as such is unsupported.
 #
 
-. ${MODULESHOME}/init/sh
-module load git
+hostname=`hostname`
 
-export SHiELD_SRC=${PWD%/*}/SHiELD_SRC/
+case $hostname in
+   lsc* )
+      echo " lsc environment "
 
-mkdir -p ${SHiELD_SRC}
-cd ${SHiELD_SRC}
+      source $MODULESHOME/init/sh
+      module load nvhpc-with-openmpi/23.1
+      module load netcdf/4.9.0
+      module load hdf5/1.12.0
+      module load cmake/3.18.2
 
-release="main"
-serialize_dycore="add_serialization"
-serialize_physics="feature/serialization"
-serial_coupler="serializer"
+      export CPATH="${NETCDF_ROOT}/include:${CPATH}"
+      export NETCDF_DIR=${NETCDF_ROOT}
 
-fv3_release=$serialize_dycore
-phy_release=$serialize_physics
-fms_release="2023.04"
-coupler_release=$serial_coupler
-drivers_release=$release
+      # make your compiler selections here
+      export FC=mpif90
+      export CC=mpicc
+      export CXX=mpicxx
+      export LD=mpif90
+      export TEMPLATE=site/nvhpc.mk
+      export LAUNCHER="mpirun -tag-output"
 
-git clone -b ${fv3_release}   https://github.com/oelbert/GFDL_atmos_cubed_sphere
-git clone -b ${phy_release}   https://github.com/oelbert/SHiELD_physics
-git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-git clone -b ${coupler_release}   https://github.com/oelbert/FMSCoupler
-git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
+      # highest level of AVX support
+      if [ `hostname | cut -c4-6` = "amd" ] ; then
+        export AVX_LEVEL=
+      else
+        export AVX_LEVEL=
+      fi
 
-#Automatic release tracking from Matt M.
-echo $release > release
+      echo -e ' '
+      module list
+      ;;
+   * )
+      echo " no environment available based on the hostname "
+      ;;
+esac

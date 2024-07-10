@@ -41,10 +41,6 @@ spin()
 # end function
 
 #
-# start the spinner
-spin &
-SPIN_PID=$!
-trap "kill -9 $SPIN_PID" `seq 0 15`
 #------------------------------------------------------------------------------
 # functional code below this point
 
@@ -60,6 +56,8 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
   compiler="intel"
   clean="noclean"
   serial="noserial"
+  yaml="noyaml"
+  pic="nopic"
 
   config_name="SHiELD"
 
@@ -93,9 +91,17 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
              fi
              shift # remove "avx from processing
              ;;
-          intel|gnu)
+          intel|gnu|nvhpc)
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
+             if [ ${compiler} = 'nvhpc' ] ; then
+               echo -e ' '
+               echo -e "The NVidia compiler has only been tested with the CI scripts."
+               echo -e "A runtime bug with v23.1 occurs when deallocating the Atm Fortran derived data type."
+               echo -e "The bug can be worked around by commenting out the offfending line of code."
+               echo -e "\n"
+               sleep 20
+             fi
              ;;
           noclean|clean|cleanall)
              clean="${arg#*=}"
@@ -104,6 +110,13 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
           noserial|serial)
              serial="${arg#*=}"
              shift # Remove "serial" from processing
+	  noyaml|yaml)
+             yaml="${arg#*=}"
+	     shift # Remove "yaml" from processing
+	     ;;
+          nopic|pic)
+             pic="${arg#*=}"
+             shift # Remove "pic" from processing
              ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
@@ -116,9 +129,11 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
           echo -e "\t[noserial(D) | serial] \t\t\t seialbox support"
+	  echo -e "\t[noyaml(D) | yaml] \t will build the FMS library with the -Duse_yaml library.  Default is no yaml"
+          echo -e "\t[nopic(D) | pic] \t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
           ;;
@@ -157,8 +172,28 @@ echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
 echo -e "\tserial   = $serial"
+echo -e "\tyaml     = $yaml"
+echo -e "\tpic      = $pic"
 echo -e "\n"
 sleep 5
+
+#
+# start the spinner
+spin &
+SPIN_PID=$!
+trap "kill -9 $SPIN_PID" `seq 0 15`
+
+#
+# test for mkmf
+if [ ! -f "${BUILD_ROOT}/mkmf/bin/mkmf" ] ; then
+   echo -e ' '
+   echo -e "The mkmf submodule has not been initialized"
+   echo -e "Please run this command in the SHiELD_build base directory:"
+   echo -e "\tgit submodule update --init mkmf"
+   echo -e "\n"
+   exit 0
+fi
+
 
 #
 # conditionally clean the build directory
@@ -187,7 +222,7 @@ sleep 5
      echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
   else
      echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler}
+     ./BUILDlibfms ${compiler} ${yaml} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
         exit 2
@@ -200,7 +235,7 @@ sleep 5
      echo " pre-built ${NCEP_DIR}/nceplibs/${compiler} exists"
   else
      echo " ${NCEP_DIR}/nceplibs/${compiler} does not exist"
-     ./BUILDnceplibs ${compiler}
+     ./BUILDnceplibs ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/ncepdir/${compiler} build failed"
         exit 3
@@ -267,7 +302,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     fi
   #
   # build the configuration
-    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${pic} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
     mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x

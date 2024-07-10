@@ -15,6 +15,7 @@ DEBUG =
 REPRO =
 VERBOSE =
 OPENMP =
+PIC =
 
 ##############################################
 # Need to use at least GNU Make version 3.81 #
@@ -44,7 +45,9 @@ endif
 LIBS += -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
 INCLUDE += -I$(SERIALBOX_ROOT)/include
 
+INCLUDE += $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
+CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
 
 FFLAGS := $(INCLUDE) -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte -traceback
 
@@ -60,6 +63,15 @@ CFLAGS += $(AVX_LEVEL) -qno-opt-dynamic-align
 else
 FFLAGS += -xCORE-AVX-I -qno-opt-dynamic-align
 CFLAGS += -xCORE-AVX-I -qno-opt-dynamic-align
+endif
+
+# For some applications, namely wrapping SHiELD in Python, it can be required to
+# compile all libraries as position independent code. Setting the PIC option to
+# 'Y' with this Makefile template will enable this.
+ifeq ($(PIC),Y)
+FFLAGS += -fPIC
+CFLAGS += -fPIC
+CPPFLAGS += -fPIC
 endif
 
 FFLAGS_OPT = -O2 -debug minimal -fp-model source -qoverride-limits -qopt-prefetch=3
@@ -126,7 +138,7 @@ ifeq ($(NETCDF),3)
   endif
 endif
 
-LIBS +=
+LIBS += $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------

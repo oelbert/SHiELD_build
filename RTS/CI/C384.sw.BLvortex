@@ -108,7 +108,7 @@ if [ ${LAUNCHER} = 'srun' ] ; then
     run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip $CONTAINER ./${executable##*/}"
 else
     export MPICH_ENV_DISPLAY=YES
-    run_cmd="${LAUNCHER} -prepend-rank -np $npes $CONTAINER ./${executable##*/}"
+    run_cmd="${LAUNCHER} -np $npes $CONTAINER ./${executable##*/}"
 fi
 
 # set up the run area
@@ -164,7 +164,6 @@ ${GRID}.${MODE}
 
 EOF
 
-
 #
 # build the input.nml
 cat > input.nml <<EOF
@@ -208,11 +207,13 @@ cat > input.nml <<EOF
        hord_tr = 8
        print_freq = 12
        warm_start = .F.
-     do_schmidt = .false.
-     target_lat = 45.
-     target_lon = 0.
-     !inline_q = .true. !Needed to get flux BCs to work
-     adiabatic = .true.
+       do_schmidt = .false.
+       target_lat = 45.
+       target_lon = 0.
+       !inline_q = .true. !Needed to get flux BCs to work
+       adiabatic = .true.
+       external_ic = .F. !COLD START
+       is_ideal_case = .T.
 /
 
  &test_case_nml

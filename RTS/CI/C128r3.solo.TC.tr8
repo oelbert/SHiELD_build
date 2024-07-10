@@ -129,7 +129,7 @@ if [ ${LAUNCHER} = 'srun' ] ; then
     run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip $CONTAINER ./${executable##*/}"
 else
     export MPICH_ENV_DISPLAY=YES
-    run_cmd="${LAUNCHER} -prepend-rank -np $npes $CONTAINER ./${executable##*/}"
+    run_cmd="${LAUNCHER} -np $npes $CONTAINER ./${executable##*/}"
 fi
 
 # set up the run area
@@ -203,7 +203,6 @@ ${GRID}.${MODE}
  "dynamics",      "zsurf",       "HGTsfc",          "atmos_static",      "all", .false.,  "none", 2
 EOF
 
-
 #
 # build the field_table
 cat > field_table <<EOF
@@ -241,7 +240,6 @@ cat > field_table <<EOF
            "units",        "1"
        "profile_type", "fixed", "surface_value=1.e30" /
 EOF
-
 
 #
 # build the input.nml
@@ -325,6 +323,7 @@ cat > input.nml <<EOF
        ke_bg = 0.
        do_vort_damp = .T.
        external_ic = .F. !COLD START
+       is_ideal_case = .T.
        mountain = .F.
        d_con = 1.
        hord_mt = 5
@@ -334,8 +333,6 @@ cat > input.nml <<EOF
        hord_tr = 8 ! z2: changed
        adjust_dry_mass = .F.
        consv_te = 0.0
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        fill = .F.
        dwind_2d = .F.
        print_freq = 6
@@ -350,6 +347,11 @@ cat > input.nml <<EOF
        stretch_fac = 3.0
 
 
+/
+
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
 /
 
 &fv_diag_plevs_nml

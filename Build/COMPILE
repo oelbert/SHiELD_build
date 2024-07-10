@@ -110,10 +110,11 @@ spin()
           noserial|serial)
              serial="${arg#*=}"
              shift # Remove "serial" from processing
-	  noyaml|yaml)
+             ;;
+          noyaml|yaml)
              yaml="${arg#*=}"
-	     shift # Remove "yaml" from processing
-	     ;;
+             shift # Remove "yaml" from processing
+             ;;
           nopic|pic)
              pic="${arg#*=}"
              shift # Remove "pic" from processing

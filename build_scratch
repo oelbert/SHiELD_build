@@ -8,7 +8,7 @@ rm -rf ../SERIALBOX_BUILD/*
 
 cd Build
 rm build_shield_nh.debug.64bit.gnu.out
-./COMPILE debug 64bit gnu clean serial
+./COMPILE shield nh debug 64bit gnu clean serial
 
 cd ..
 set +x

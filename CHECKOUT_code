@@ -34,7 +34,7 @@ cd ${SHiELD_SRC}
 release="main"
 serialize_dycore="add_serialization"
 serialize_physics="feature/serialization"
-serial_coupler="serializer"
+serial_coupler="ser/2024.02"
 
 fv3_release=$serialize_dycore
 phy_release=$serialize_physics

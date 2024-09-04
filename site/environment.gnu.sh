@@ -35,7 +35,7 @@ case $hostname in
        module rm intel
        module load   PrgEnv-gnu
        module rm gcc
-       module load gcc/10.3.0
+       module load gcc
        module load cray-hdf5/1.12.2.3
        module load cray-netcdf/4.9.0.3
        module load craype-hugepages4M

@@ -33,11 +33,11 @@ case $hostname in
        module rm intel-classic
        module rm intel-oneapi
        module rm intel
-       module load   PrgEnv-gnu
+       module load PrgEnv-gnu
        module rm gcc
-       module load gcc
-       module load cray-hdf5/1.12.2.3
-       module load cray-netcdf/4.9.0.3
+       module load gcc-native/13.2
+       module load cray-hdf5/1.12.2.11
+       module load cray-netcdf/4.9.0.11
        module load craype-hugepages4M
        module load cmake/3.23.1
        module load libyaml/0.2.5

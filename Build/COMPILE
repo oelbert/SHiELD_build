@@ -268,6 +268,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     # run preprocessor
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/GFS_layer/ $SHiELD_SRC/SHiELD_physics/GFS_layer/*.F90
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/ $SHiELD_SRC/SHiELD_physics/gsmphys/*.F90
+    python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/gsmphys/ $SHiELD_SRC/SHiELD_physics/gsmphys/*.f
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/simple_coupler/ $SHiELD_SRC/SHiELD_physics/simple_coupler/*.F90
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/IPD_layer/ $SHiELD_SRC/SHiELD_physics/IPD_layer/*.F90
     python3 $PP_SER $PPSER_FLAGS --output-dir=$SERIALBOX_OUTDIR/SHiELD_physics/FV3GFS/ $SHiELD_SRC/SHiELD_physics/FV3GFS/*.F90

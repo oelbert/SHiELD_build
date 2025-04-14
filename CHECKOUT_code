@@ -34,11 +34,11 @@ cd ${SHiELD_SRC}
 release="main"
 serialize_dycore="add_serialization"
 serialize_physics="feature/serialization"
-serial_coupler="serializer"
+serial_coupler="ser/2024.02"
 
 fv3_release=$serialize_dycore
 phy_release=$serialize_physics
-fms_release="2023.04"
+fms_release="2024.02"
 coupler_release=$serial_coupler
 drivers_release=$release
 

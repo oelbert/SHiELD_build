@@ -31,6 +31,7 @@ MAKEFLAGS += --jobs=8
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT    = $(MPICH_DIR)
 SERIALBOX_ROOT = /autofs/ncrc-svm1_home2/Oliver.Elbert/code/repos/personal_forks/serialbox/install
+#SERIALBOX_ROOT = /autofs/ncrc-svm1_home2/Oliver.Elbert/code/repos/serialbox/install
 # start with blank LIB
 LIBS :=
 

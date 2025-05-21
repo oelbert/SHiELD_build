@@ -99,6 +99,7 @@ fi
 # optionally link serialbox modules for data serialization
 SERIAL_I_FLAGS=""
 SERIAL_L_FLAGS=""
+#SERIALBOX_ROOT=/autofs/ncrc-svm1_home2/Oliver.Elbert/code/repos/serialbox/install
 #SERIALBOX_ROOT=/autofs/ncrc-svm1_home2/Oliver.Elbert/code/repos/personal_forks/serialbox/install
 #if [ ${SERIAL} = 'serial' ] ; then
 #  SERIAL_I_FLAGS+="-I${SERIALBOX_ROOT}/include" 

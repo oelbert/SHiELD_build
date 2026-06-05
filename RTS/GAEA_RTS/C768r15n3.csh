@@ -1,58 +1,70 @@
 #!/bin/tcsh
-#SBATCH --output=/home/jmoualle/ORION_RT/stdout/%x.%j
+#SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C768r15n3
-#SBATCH -A gfdlhires
-#SBATCH --partition=orion
+##SBATCH --clusters=c5
 #SBATCH --time=00:20:00
-#SBATCH --nodes=74
-#SBATCH --exclusive
-#SBATCH --mail-user=joseph.mouallem@noaa.gov
-#SBATCH --mail-type=ALL
+#SBATCH --nodes=23
 
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/
-module load hdf5/
-module load impi/2020
+# see run_tests.sh for an example of how to run these tests
+#
 set echo
 
-set WORKDIR = "/work/noaa/gfdlscr/${USER}/"
+echo $BUILD_AREA
+echo $cluster
 
-set BASEDIR    = "$WORKDIR"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/"
-set INPUT_DATA1 = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA1/"
-# from YQS
-set BUILD_AREA = "/home/${USER}/SHiELD_Lucas/SHiELD_build/"
+# uncomment these if running without run_test.sh
+#################################################
+#set YourGroup  = "gfdl_w"
+#set BUILD_AREA = "/ncrc/home2/${USER}/github_shield/SHiELD_build/"
 
-# release number for the script
-set RELEASE = "SHiELD_FMS2020.02"
+if ( $cluster == 'c5' ) then
+  set BASEDIR    = "/gpfs/f5/gfdl_w/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
+endif
+if ( $cluster == 'c6' ) then
+  set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
+endif
+
+if ( ! $?COMPILER ) then
+  set COMPILER = "intel"
+endif
+
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
+
+source ${BUILD_AREA}/site/environment.${COMPILER}.csh
 
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+if ( ! $?MODE ) then
+  set MODE = "32bit"      # choices:  32bit, 64bit
+endif
 set MONO = "non-mono"   # choices:  mono, non-mono
 set CASE = "C768r15n3_hwt"
 set NAME = "20170501.00Z"
 set MEMO = "$SLURM_JOB_NAME"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
-set COMP = "repro"       # choices:  debug, repro, prod
+if ( ! $?COMP ) then
+  set COMP = "repro"       # choices:  debug, repro, prod
+endif
 set NO_SEND = "no_send"    # choices:  send, no_send
 set EXE = "x"
+
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set WORKDIR    = ${BASEDIR}/SHiELD_${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}${MEMO}/
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 # input filesets
-set ICS  = ${INPUT_DATA1}/variable.v201810/${CASE}/${NAME}_IC/GFS_INPUT.tar
+set ICS  = ${INPUT_DATA}/variable.v201810/${CASE}/${NAME}_IC/GFS_INPUT.tar
 set FIX  = ${INPUT_DATA}/fix.v201810/
 set GFS  = ${INPUT_DATA}/GFS_STD_INPUT.20160311.tar
-set GRID = ${INPUT_DATA1}/variable.v201810/${CASE}/GRID/
+set GRID = ${INPUT_DATA}/variable.v201810/${CASE}/GRID/
 set FIX_bqx  = ${INPUT_DATA}/climo_data.v201807
 
 # sending file to gfdl
-set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set SEND_FILE = /home/${USER}/Util/send_file_slurm.csh
-set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
+#set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
+#set SEND_FILE = /ncrc/home1/${USER}/Util/send_file_slurm.csh
+set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
 # changeable parameters
     # dycore definitions
@@ -62,8 +74,8 @@ set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
     set npy_g2 = "1081"
     set npz = "63"
     set npz_g2 = "63"
-    set layout_x = "18" 
-    set layout_y = "19" 
+    set layout_x = "18"
+    set layout_y = "18"
     set layout_x_g2 = "28" #28
     set layout_y_g2 = "32" #32 
     set io_layout = "1,1"
@@ -83,6 +95,9 @@ set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
     set minutes = "0"
     set seconds = "0"
     set dt_atmos = "90" 
+
+    #fms yaml
+    set use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -111,7 +126,7 @@ set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
     # set various debug options
     set no_dycore = ".F."
     set dycore_only = ".F." 
-    set chksum_debug = ".false."
+    set chksum_debug = ".true."
     set print_freq = "-6"
 
     if (${TYPE} == "nh") then
@@ -187,7 +202,7 @@ set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
     @ npes_g1 = ${layout_x} * ${layout_y} * 6
     @ npes_g2 = ${layout_x_g2} * ${layout_y_g2} 
     @ npes = ${npes_g1} + ${npes_g2}
-    set run_cmd = "srun --ntasks=$npes --cpus-per-task=$skip ./$executable:t"
+    set run_cmd = "srun --label --ntasks=$npes --cpus-per-task=$skip ./$executable:t"
 
     setenv MPICH_ENV_DISPLAY
     setenv MPICH_MPIIO_CB_ALIGN 2
@@ -219,12 +234,18 @@ cat >! diag_table << EOF
 ${NAME}.${GRID}.${MODE}.${MONO}
 $y $m $d $h 0 0 
 EOF
-#cat ${BUILD_AREA}/FV3GFS/RUN/RETRO/diag_table_hwt_test >> diag_table
+#cat ${BUILD_AREA}/tables/diag_table_hwt_test >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
-cp ${BUILD_AREA}/RUN/RETRO/diag_table_hwt_test diag_table
-cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
+if ( ${use_yaml} == ".T." ) then
+  #cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  #cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
+# this file does not exist, so there will be no diag table
+#cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp $executable .
 
 mkdir -p INPUT/
@@ -234,17 +255,17 @@ tar xf ${GFS}
 
 # Grid and orography data
 #tar xf ${GRID}
-ln -s ${GRID}/* INPUT/
+cp -rf ${GRID}/* INPUT/
 
 #ln -s /home/jmoualle/gfs_ctrl.nc INPUT/
-ln -s ${INPUT_DATA}/gfs_ctrl.nc INPUT/
+cp -rf ${INPUT_DATA}/gfs_ctrl.nc INPUT/
 
 
 # Date specific ICs (still a tarball)
 tar xf ${ICS}
 #Nested grid fix for new files
 foreach i ( $PWD/INPUT/*.tile7.nc )
-    ln -s $i ${i:r:r}.nest02.tile7.nc
+    cp $i ${i:r:r}.nest02.tile7.nc
 end
 
 #cp $FIX/global_sfc_emissivity_idx.txt INPUT/sfc_emissivity_idx.txt
@@ -253,6 +274,25 @@ cp INPUT/aerosol.dat .
 cp INPUT/co2historicaldata_201*.txt .
 cp INPUT/sfc_emissivity_idx.txt .
 cp INPUT/solarconstant_noaa_an.txt .
+
+cp $FIX/global_glacier.2x2.grb INPUT/
+cp $FIX/global_maxice.2x2.grb INPUT/
+cp $FIX/RTGSST.1982.2012.monthly.clim.grb INPUT/
+cp $FIX/global_snoclim.1.875.grb INPUT/
+cp $FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb INPUT/
+cp $FIX/global_albedo4.1x1.grb INPUT/
+cp $FIX/CFSR.SEAICE.1982.2012.monthly.clim.grb INPUT/
+cp $FIX/global_tg3clim.2.6x1.5.grb INPUT/
+cp $FIX/global_vegfrac.0.144.decpercent.grb INPUT/
+cp $FIX/global_vegtype.igbp.t1534.3072.1536.rg.grb INPUT/
+cp $FIX/global_soiltype.statsgo.t1534.3072.1536.rg.grb INPUT/
+cp $FIX/global_soilmgldas.t1534.3072.1536.grb INPUT/
+cp $FIX/seaice_newland.grb INPUT/
+cp $FIX/global_shdmin.0.144x0.144.grb INPUT/
+cp $FIX/global_shdmax.0.144x0.144.grb INPUT/
+cp $FIX/global_slope.1x1.grb INPUT/
+cp $FIX/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb INPUT/
+cp $FIX_bqx/mld/mld_DR003_c1m_reg2.0.grb INPUT/
 
 unset echo
 cat >! input.nml <<EOF
@@ -287,6 +327,10 @@ flush_nc_files = .true.
        clock_grain = 'ROUTINE',
        domains_stack_size = 3000000,
        print_memory_usage = .F.
+/
+
+ &fms_affinity_nml
+      affinity=.false.
 /
 
  &fv_grid_nml
@@ -349,7 +393,6 @@ flush_nc_files = .true.
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = $consv_te
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -366,9 +409,14 @@ flush_nc_files = .true.
        write_3d_diags = .T.
 /
 
+ &integ_phys_nml
+       do_sat_adj = .F.
+/
+
 &fv_nest_nml
     grid_pes = $npes_g1,$npes_g2
-    grid_coarse = 0,1
+    !grid_coarse = 0,1
+    num_tile_top = 6
     tile_coarse = 0,6
     nest_refine = 0,3
     nest_ioffsets = 999,49
@@ -383,12 +431,19 @@ flush_nc_files = .true.
        minutes = $minutes
        seconds = $seconds
        dt_atmos = $dt_atmos
-       dt_ocean = $dt_atmos
+       !dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .false.
+       !memuse_verbose = .false.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
+       ice_npes = -1
+       land_npes = -1
+       do_ocean=.False.
+       dt_cpld = $dt_atmos
+       do_flux=.False.
+       do_land=.False.
+       do_ice=.False.
 /
 
  &external_ic_nml 
@@ -406,7 +461,7 @@ flush_nc_files = .true.
        nst_anl        = .true.
        use_ufo        = .true.
        pre_rad        = .false.
-       ncld           = 5
+       ncld           = 1
        zhao_mic       = .true.
        pdfcld         = .false.
        fhswr          = 3600.
@@ -426,7 +481,6 @@ flush_nc_files = .true.
        cal_pre        = .true.
        redrag         = .true.
        dspheat        = .true.
-       satmedmf       = .false.
        ysupbl         = .false.
        hybedmf        = .true.
        random_clds    = .true.
@@ -459,8 +513,7 @@ flush_nc_files = .true.
      eps_day = 10.
 /
 
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .true.
+  &gfdl_mp_nml
        do_sedi_heat = .false.
        rad_snow = .true.
        rad_graupel = .true.
@@ -476,14 +529,11 @@ flush_nc_files = .true.
        qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .F.
        tau_l2v = 180.
        tau_v2l =  90.
-       tau_g2v = 900.
        rthresh = 10.e-6  ! This is a key parameter for cloud water
        dw_land  = 0.16
        dw_ocean = 0.10
-       ql_gen = 1.0e-3
        ql_mlt = 1.0e-3
        qi0_crt = 8.0E-5
        qs0_crt = 1.0e-3
@@ -492,17 +542,11 @@ flush_nc_files = .true.
        c_pgacs = 0.01
        rh_inc = 0.30
        rh_inr = 0.30
-       rh_ins = 0.30
        ccn_l = 300.
        ccn_o = 100.
        c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .true.
        mp_time = 90.
        icloud_f = 1
@@ -513,28 +557,28 @@ flush_nc_files = .true.
 /
 
 &namsfc
-       FNGLAC   = "$FIX/global_glacier.2x2.grb",
-       FNMXIC   = "$FIX/global_maxice.2x2.grb",
-       FNTSFC   = "$FIX/RTGSST.1982.2012.monthly.clim.grb",
-       FNSNOC   = "$FIX/global_snoclim.1.875.grb",
+       FNGLAC   = "INPUT/global_glacier.2x2.grb",
+       FNMXIC   = "INPUT/global_maxice.2x2.grb",
+       FNTSFC   = "INPUT/RTGSST.1982.2012.monthly.clim.grb",
+       FNSNOC   = "INPUT/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
-       FNALBC   = "$FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-       FNALBC2  = "$FIX/global_albedo4.1x1.grb",
-       FNAISC   = "$FIX/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-       FNTG3C   = "$FIX/global_tg3clim.2.6x1.5.grb",
-       FNVEGC   = "$FIX/global_vegfrac.0.144.decpercent.grb",
-       FNVETC   = "$FIX/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-       FNSOTC   = "$FIX/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-       FNSMCC   = "$FIX/global_soilmgldas.t1534.3072.1536.grb",
-       FNMSKH   = "$FIX/seaice_newland.grb",
+       FNALBC   = "INPUT/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
+       FNALBC2  = "INPUT/global_albedo4.1x1.grb",
+       FNAISC   = "INPUT/CFSR.SEAICE.1982.2012.monthly.clim.grb",
+       FNTG3C   = "INPUT/global_tg3clim.2.6x1.5.grb",
+       FNVEGC   = "INPUT/global_vegfrac.0.144.decpercent.grb",
+       FNVETC   = "INPUT/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+       FNSOTC   = "INPUT/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
+       FNSMCC   = "INPUT/global_soilmgldas.t1534.3072.1536.grb",
+       FNMSKH   = "INPUT/seaice_newland.grb",
        FNTSFA   = "",
        FNACNA   = "",
        FNSNOA   = "",
-       FNVMNC   = "$FIX/global_shdmin.0.144x0.144.grb",
-       FNVMXC   = "$FIX/global_shdmax.0.144x0.144.grb",
-       FNSLPC   = "$FIX/global_slope.1x1.grb",
-       FNABSC   = "$FIX/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
-       FNMLDC   = "$FIX/../mld/mld_DR003_c1m_reg2.0.grb",       
+       FNVMNC   = "INPUT/global_shdmin.0.144x0.144.grb",
+       FNVMXC   = "INPUT/global_shdmax.0.144x0.144.grb",
+       FNSLPC   = "INPUT/global_slope.1x1.grb",
+       FNABSC   = "INPUT/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
+       FNMLDC   = "INPUT/mld_DR003_c1m_reg2.0.grb",       
        LDEBUG   =.false.,
        FSMCL(2) = 99999
        FSMCL(3) = 99999
@@ -555,6 +599,19 @@ flush_nc_files = .true.
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 cat >! input_nest02.nml <<EOF
  &amip_interp_nml
@@ -651,7 +708,6 @@ flush_nc_files = .true.
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = 0.
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -669,6 +725,10 @@ flush_nc_files = .true.
        nestupdate = 7
 
        full_zs_filter = .T.
+/
+
+ &integ_phys_nml
+       do_sat_adj = .F.
 /
 
 &surf_map_nml
@@ -750,8 +810,7 @@ flush_nc_files = .true.
        xkzm_m         = 0.00 
 /
 
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .F. 
+  &gfdl_mp_nml
        do_sedi_heat = .F.   
        rad_snow = .true.
        rad_graupel = .true.
@@ -768,36 +827,30 @@ flush_nc_files = .true.
        qi_lim = 1. ! old Fast MP
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .F.
        tau_l2v = 180
        tau_v2l =  90.
-       tau_g2v = 600.
        rthresh = 10.0e-6  ! This is a key parameter for cloud water ! use 10 for shallow conv
        dw_land  = 0.16
        dw_ocean = 0.10
-       ql_gen = 1.0e-3
        qi0_crt = 1.2e-4 
        qi0_max = 2.0e-4 
        qs0_crt = 1.0e-3 ! 10x smaller, increase snow --> graupel AC
        tau_i2s = 1000.   !ice to snow autoconversion time
        c_psaci = 0.1   
        c_pgacs = 0.1 ! 100x increased rain --> graupel accretion
-       c_cracw = 1.0 
        rh_inc = 0.30
        rh_inr = 0.30
-       rh_ins = 0.30
        ccn_l = 270. !for CONUS
        ccn_o = 90.
-       use_ppm = .T.  ! set to true
-       use_ccn = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .true.
        icloud_f = 1
        mp_time = $dt_atmos
 /
 
+  &cld_eff_rad_nml
+/
 
   &interpolator_nml
        interp_method = 'conserve_great_circle'
@@ -847,6 +900,19 @@ flush_nc_files = .true.
 /
 EOF
 
+if ( ${use_yaml} == ".T." ) then
+  cat >> input_nest02.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
+
 # run the executable
 
    sleep 1
@@ -855,9 +921,9 @@ EOF
 	exit
    endif
 
-if ($NO_SEND == "no_send") then
-  exit
-endif
+#if ($NO_SEND == "no_send") then
+#  exit
+#endif
 
 #########################################################################
 # generate date for file names
@@ -889,7 +955,7 @@ endif
 
     tar cvf - *\.out *\.results *\.nml *_table | gzip -c > $WORKDIR/ascii/$begindate.ascii_out.tgz
 
-    msub -v source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii $SEND_FILE
+#    msub -v source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii $SEND_FILE
 
 ########################################################################
 # move restart files
@@ -931,7 +997,7 @@ endif
         mv $WORKDIR/rundir/RESTART/$index $restart_file/$index
       end
 
-      msub -v source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart $SEND_FILE
+#      msub -v source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart $SEND_FILE
 
    endif
 
@@ -968,6 +1034,6 @@ endif
 
     cd $WORKDIR/rundir
 
-    msub -v source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history $SEND_FILE
-    msub -v source=$WORKDIR/history/${begindate}_nggps3d,destination=gfdl:$gfdl_archive/history/${begindate}_nggps3d,extension=tar,type=history $SEND_FILE
-    msub -v source=$WORKDIR/history/${begindate}_tracer3d,destination=gfdl:$gfdl_archive/history/${begindate}_tracer3d,extension=tar,type=history $SEND_FILE
+#    msub -v source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history $SEND_FILE
+#    msub -v source=$WORKDIR/history/${begindate}_nggps3d,destination=gfdl:$gfdl_archive/history/${begindate}_nggps3d,extension=tar,type=history $SEND_FILE
+#    msub -v source=$WORKDIR/history/${begindate}_tracer3d,destination=gfdl:$gfdl_archive/history/${begindate}_tracer3d,extension=tar,type=history $SEND_FILE

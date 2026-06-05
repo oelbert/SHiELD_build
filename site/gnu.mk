@@ -15,6 +15,8 @@ DEBUG =
 REPRO =
 VERBOSE =
 OPENMP =
+PIC =
+SERIAL =
 
 ##############################################
 # Need to use at least GNU Make version 3.81 #
@@ -28,9 +30,10 @@ endif
 MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
-MPI_ROOT    = $(MPICH_DIR)
+MPI_ROOT = $(MPICH_DIR)
 # start with blank LIB
 LIBS :=
+FFLAGS :=
 
 ifneq (`nc-config --libs`,)
   INCLUDE = `nf-config --fflags` `nc-config --cflags`
@@ -40,9 +43,21 @@ else
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
-FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
+# For SerialBox Support (e.g., Serialization used for validation between Pace and
+# SHiELD), setting the SERIAL option to 'Y' with this Makefile template will
+# enable this.
+$(warning SERIAL = $(SERIAL))
+ifeq ($(SERIAL),Y)
+  INCLUDE += -I$(SERIALBOX_ROOT)/include
+  LIBS += -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs -Wl,-rpath,$(SERIALBOX_ROOT)/lib
+  FFLAGS += -DSERIALIZE
+endif
 
-FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
+INCLUDE += $(shell pkg-config --cflags yaml-0.1)
+FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
+CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
+
+FFLAGS += $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace -fallow-argument-mismatch
 
 ifeq ($(32BIT),Y)
 CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8
@@ -51,6 +66,22 @@ else
 FFLAGS += -fdefault-real-8 -fdefault-double-8
 endif
 
+ifeq ($(AVX),Y)
+FFLAGS += $(AVX_LEVEL)
+CFLAGS += $(AVX_LEVEL)
+else
+FFLAGS += -march=native
+CFLAGS += -march-native
+endif
+
+# For some applications, namely wrapping SHiELD in Python, it can be required to
+# compile all libraries as position independent code. Setting the PIC option to
+# 'Y' with this Makefile template will enable this.
+ifeq ($(PIC),Y)
+FFLAGS += -fPIC
+CFLAGS += -fPIC
+CPPFLAGS += -fPIC
+endif
 
 FFLAGS_OPT = -O2 -fno-range-check
 FFLAGS_REPRO = -O2 -ggdb -fno-range-check
@@ -113,7 +144,7 @@ ifeq ($(NETCDF),3)
   endif
 endif
 
-LIBS +=
+LIBS += $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
 
 #---------------------------------------------------------------------------

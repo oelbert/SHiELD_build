@@ -34,13 +34,15 @@ COMPILER="intel"
 
 bit="32bit"
 comp="prod"
+pic="nopic"
+serial="noserial"
 
 #
 ## parse arguments
 for arg in "$@"
 do
     case $arg in
-        shield|solo)
+        shield|solo|shiemom|shiemom_lm4)
           CONFIG="${arg#*=}"
           shift # Remove CONFIG from processing
           ;;
@@ -68,9 +70,25 @@ do
           AVX="${arg#*=}"
           shift # Remove AVX from processing
           ;;
-        intel|gnu)
+        intel|gnu|nvhpc)
           COMPILER="${arg#*=}"
           shift # Remove COMPILER from processing
+          ;;
+        nopic|pic)
+          if [ "${arg#*=}" = 'pic' ] ; then
+            PIC=Y
+          else
+            PIC=N
+          fi
+          shift # Remove PIC from processing
+          ;;
+        noserial|serial)
+          if [ "${arg#*=}" = 'serial' ] ; then
+            SERIAL=Y
+          else
+            SERIAL=N
+          fi
+          shift # Remove SERIAL from processing
           ;;
     esac
 done
@@ -80,16 +98,37 @@ done
 module list
 
 $FC --version
-
-NCEPLIBS="${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
 if [ ${CONFIG} = 'shield' ] ; then
-  NCEPLIBS+=" ./libgfs.a"
-  NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+  EXTERNALLIBS="./libfv3.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
+  EXTERNALLIBS+=" ./libgfs.a"
+  EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'solo'  ] ; then
+  EXTERNALLIBS=${LIBS_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a
+elif [ ${CONFIG} = 'shiemom'  ] ; then
+  EXTERNALLIBS="./libfv3.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${comp}.64bit.${COMPILER}/libsis2.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${comp}.64bit.${COMPILER}/libmom6.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
+  EXTERNALLIBS+=" ./libgfs.a"
+  EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'shiemom_lm4'  ] ; then
+  EXTERNALLIBS="./libfv3.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${comp}.64bit.${COMPILER}/libsis2.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${comp}.64bit.${COMPILER}/libmom6.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/lm4/${comp}.64bit.${COMPILER}/liblm4.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
+  EXTERNALLIBS+=" ./libgfs.a"
+  EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
 
-if [ ${CONFIG} = 'shield' ] ; then
-  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
+if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ||  [ ${CONFIG} = 'shiemom_lm4' ]   ; then
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} SERIAL=${SERIAL} -f Makefile_gfs)
 fi
-(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
 
+(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} SERIAL=${SERIAL} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_fv3)
+
+if   [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ]  ; then
+   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} SERIAL=${SERIAL} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_driver)
+fi
 exit 0

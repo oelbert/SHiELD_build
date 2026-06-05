@@ -64,7 +64,9 @@ TYPE="nh"         # choices:  nh, hydro
 MODE="64bit"      # choices:  32bit, 64bit
 GRID="C$res"
 HYPT="on"         # choices:  on, off  (controls hyperthreading)
-COMP="repro"       # choices:  debug, repro, prod
+if [ -z ${COMP} ] ; then
+  COMP="repro"       # choices:  debug, repro, prod
+fi
 
 # directory structure
 WORKDIR=${SCRATCHDIR:-${BUILDDIR}}/CI/BATCH-CI/${GRID}.${MEMO}/
@@ -94,6 +96,8 @@ executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
     warm_start=".F."
     na_init=1
     curr_date="0,0,0,0"
+    #fms yaml
+    use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
 
 if [ ${TYPE} = "nh" ] ; then
   # non-hydrostatic options
@@ -129,7 +133,7 @@ if [ ${LAUNCHER} = 'srun' ] ; then
     run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip $CONTAINER ./${executable##*/}"
 else
     export MPICH_ENV_DISPLAY=YES
-    run_cmd="${LAUNCHER} -prepend-rank -np $npes $CONTAINER ./${executable##*/}"
+    run_cmd="${LAUNCHER} -np $npes $CONTAINER ./${executable##*/}"
 fi
 
 # set up the run area
@@ -145,8 +149,13 @@ cp $executable .
 # copy over the tables
 #
 # create an empty data_table
-touch data_table
-
+if [ $use_yaml = ".T." ] ; then
+  cat > data_table.yaml << EOF
+data_table: []
+EOF
+else
+  touch data_table
+fi
 
 #
 # build the diag_table with the experiment name and date stamp
@@ -203,10 +212,60 @@ ${GRID}.${MODE}
  "dynamics",      "zsurf",       "HGTsfc",          "atmos_static",      "all", .false.,  "none", 2
 EOF
 
-
 #
 # build the field_table
-cat > field_table <<EOF
+if [ $use_yaml = ".T." ] ; then
+  cat > field_table.yaml << EOF
+field_table:
+- field_type: tracer
+  modlist:
+  - model_type: atmos_mod
+    varlist:
+    - variable: sphum
+      longname: specific humidity
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: liq_wat
+      longname: cloud water mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: rainwat
+      longname: rain mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: ice_wat
+      longname: cloud ice mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: snowwat
+      longname: snow mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: graupel
+      longname: graupel mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: cld_amt
+      longname: cloud amount
+      units: '1'
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+EOF
+else
+  cat > field_table << EOF
 # added by FRE: sphum must be present in atmos
 # specific humidity for moist runs
  "TRACER", "atmos_mod", "sphum"
@@ -241,7 +300,7 @@ cat > field_table <<EOF
            "units",        "1"
        "profile_type", "fixed", "surface_value=1.e30" /
 EOF
-
+fi
 
 #
 # build the input.nml
@@ -325,6 +384,7 @@ cat > input.nml <<EOF
        ke_bg = 0.
        do_vort_damp = .T.
        external_ic = .F. !COLD START
+       is_ideal_case = .T.
        mountain = .F.
        d_con = 1.
        hord_mt = 5
@@ -334,8 +394,6 @@ cat > input.nml <<EOF
        hord_tr = 8 ! z2: changed
        adjust_dry_mass = .F.
        consv_te = 0.0
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        fill = .F.
        dwind_2d = .F.
        print_freq = 6
@@ -350,6 +408,11 @@ cat > input.nml <<EOF
        stretch_fac = 3.0
 
 
+/
+
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
 /
 
 &fv_diag_plevs_nml
@@ -435,7 +498,6 @@ cat > input.nml <<EOF
        rthresh = 10.e-6  !   10.e-6  ! This is a key parameter for cloud water
       dw_land  = 0.15
       dw_ocean = 0.10
-       ql_gen = 1.0e-3
     ql_mlt = 2.0e-3
     qs_mlt = 1.e-6
        qi0_crt = 8.E-5
@@ -445,7 +507,6 @@ cat > input.nml <<EOF
        c_pgacs = 0.01
        rh_inc = 0.0
        rh_inr = 0.0
-       rh_ins = 0.0
        ccn_l = 300.
        ccn_o = 100.
        c_paut =  0.55
@@ -465,6 +526,19 @@ cat > input.nml <<EOF
         reimax = 150.0
 /
 EOF
+
+if [ $use_yaml = ".T." ] ; then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+fi
 
 # run the executable
 ${run_cmd} | tee fms.out || exit
